@@ -41,6 +41,8 @@ func (c OrganizationController) Save() http.HandlerFunc {
 			return
 		}
 
-		Success(w, resources.UserDto{}.DomainToDto(user))
+		orgDto := resources.OrganizationDto{}
+		orgDto = orgDto.DomainToDto(org)
+		Success(w, orgDto)
 	}
 }
