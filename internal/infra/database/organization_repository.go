@@ -32,6 +32,7 @@ type OrganizationRepository interface {
 	Save(o domain.Organization) (domain.Organization, error)
 	FindList(uId uint64) ([]domain.Organization, error)
 	Find(id uint64) (domain.Organization, error)
+	Update(o domain.Organization) (domain.Organization, error)
 }
 
 func NewOrganizationRepository(session db.Session) OrganizationRepository {
@@ -84,6 +85,21 @@ func (r organizationRepository) Find(id uint64) (domain.Organization, error) {
 	}
 
 	o := r.mapModelToDomain(org)
+	return o, nil
+}
+
+func (r organizationRepository) Update(o domain.Organization) (domain.Organization, error) {
+	org := r.mapDomainToModel(o)
+	org.UpdatedDate = time.Now()
+
+	err := r.coll.
+		Find(db.Cond{"id": o.Id, "deleted_date": nil}).
+		Update(&org)
+	if err != nil {
+		return domain.Organization{}, err
+	}
+
+	o = r.mapModelToDomain(org)
 	return o, nil
 }
 
