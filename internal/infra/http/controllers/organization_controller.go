@@ -103,6 +103,34 @@ func (c OrganizationController) Update() http.HandlerFunc {
 		org.Lat = newOrg.Lat
 		org.Lon = newOrg.Lon
 
+		org, err = c.orgService.Update(org)
+		if err != nil {
+			log.Printf("OrganizationController.Update(c.orgService.Update): %s", err)
+			InternalServerError(w, err)
+			return
+		}
+
 		Success(w, resources.OrganizationDto{}.DomainToDto(org))
+	}
+}
+
+func (c OrganizationController) Delete() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		user := r.Context().Value(UserKey).(domain.User)
+		org := r.Context().Value(OrgKey).(domain.Organization)
+
+		if user.Id != org.UserId {
+			Forbidden(w, errors.New("access denied"))
+			return
+		}
+
+		err := c.orgService.Delete(org.Id)
+		if err != nil {
+			log.Printf("OrganizationController.Delete(c.orgService.Delete): %s", err)
+			InternalServerError(w, err)
+			return
+		}
+
+		noContent(w)
 	}
 }
